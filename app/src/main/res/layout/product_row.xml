@@ -12,7 +12,7 @@
         android:layout_margin="10dp">
 
             <TextView
-                android:layout_width="220sp"
+                android:layout_width="210sp"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:text="赤鉛筆"
@@ -20,7 +20,7 @@
                 android:textColor="@android:color/black"
                 />
             <TextView
-                android:layout_width="100sp"
+                android:layout_width="70sp"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:text="100"
