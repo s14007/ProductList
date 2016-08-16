@@ -60,7 +60,7 @@ public class EditProduct extends Activity implements View.OnClickListener{
         }
 
         // MyHelperオブジェクトを作り、フィールドにセット
-        myHelper = new MyHelper(this);
+        myHelper = MyHelper.getInstance(this);
 
         Button btn_ok = (Button)findViewById(R.id.btn_ok);
         btn_ok.setOnClickListener(this);
@@ -215,7 +215,7 @@ public class EditProduct extends Activity implements View.OnClickListener{
         ContentValues values = new ContentValues();
 
         values.put(MyHelper.Columns.ID, item.id);
-        values.put(MyHelper.Columns.NAME, item.name);
+        values.put(MyHelper.Columns.productName, item.name);
         values.put(MyHelper.Columns.PRICE, item.price);
         values.put(MyHelper.Columns.STOCK, item.stock);
         values.put(MyHelper.Columns.PREFECTURE, item.prefecture);
@@ -244,7 +244,7 @@ public class EditProduct extends Activity implements View.OnClickListener{
         ContentValues values = new ContentValues();
 
         values.put(MyHelper.Columns.ID, item.id);
-        values.put(MyHelper.Columns.NAME, item.name);
+        values.put(MyHelper.Columns.productName, item.name);
         values.put(MyHelper.Columns.PRICE, item.price);
         values.put(MyHelper.Columns.STOCK, item.stock);
         values.put(MyHelper.Columns.PREFECTURE, item.prefecture);
