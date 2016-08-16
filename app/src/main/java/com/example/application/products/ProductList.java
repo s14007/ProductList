@@ -1,41 +1,76 @@
 package com.example.application.products;
 
-import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Display;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProductList extends Activity implements AdapterView.OnItemClickListener, View.OnClickListener {
+public class ProductList extends AppCompatActivity implements AdapterView.OnItemClickListener, View.OnClickListener {
 
     private MyHelper myHelper;
     private Handler mHandler;
 
     private List<ProductItem> selectProduct;
 
+    private AccountInfo accountInfo;
+    private SQLiteDatabase db;
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        menu.add(Menu.NONE, 0, Menu.NONE, "ログアウト");
+        menu.add(Menu.NONE, 1, Menu.NONE, "アカウント情報の変更");
+        menu.add(Menu.NONE, 2, Menu.NONE, "アカウントの削除");
+        menu.add(Menu.NONE, 3, Menu.NONE, "注文のキャンセル");
+        return super.onCreateOptionsMenu(menu);
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        boolean ret = true;
+        switch (item.getItemId()) {
+            default:
+                ret = super.onOptionsItemSelected(item);
+                break;
+            case 0:
+                Log.e("Options:", "selectLogout");
+                break;
+            case 1:
+                Intent intent = new Intent(this, ChangeAccountInfo.class);
+                startActivity(intent);
+                break;
+            case 2:
+                break;
+            case 3:
+                break;
+        }
+        return ret;
+    }
+
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long l) {
 
-        ProductItem item = (ProductItem)parent.getItemAtPosition(position);
+        ProductItem item = (ProductItem) parent.getItemAtPosition(position);
 
         Intent intent = new Intent(this, EditProduct.class);
 
@@ -75,7 +110,7 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
     private List<ProductItem> itemList;
     private ItemAdapter adapter;
 
-    private void setProductData(){
+    private void setProductData() {
 
 /*
         ProductItem item = new ProductItem();
@@ -103,7 +138,7 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
 
     }
 
-    private void selectProductList(){
+    private void selectProductList() {
 
         // 1. SQLiteDatabaseオブジェクトを取得
         SQLiteDatabase db = myHelper.getReadableDatabase();
@@ -113,8 +148,10 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
                 db.query(MyHelper.TABLE_NAME, null, null, null, null, null,
                         MyHelper.Columns._ID + " ASC");
 
+
+
         // 3. 読込位置を先頭にする。falseの場合は結果0件
-        if(!cursor.moveToFirst()){
+        if (!cursor.moveToFirst()) {
             cursor.close();
             db.close();
             return;
@@ -123,7 +160,7 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
         // 4. 列のindex(位置)を取得する
         int _idIndex = cursor.getColumnIndex(MyHelper.Columns._ID);
         int idIndex = cursor.getColumnIndex(MyHelper.Columns.ID);
-        int nameIndex = cursor.getColumnIndex(MyHelper.Columns.NAME);
+        int nameIndex = cursor.getColumnIndex(MyHelper.Columns.productName);
         int priceIndex = cursor.getColumnIndex(MyHelper.Columns.PRICE);
         int stockIndex = cursor.getColumnIndex(MyHelper.Columns.STOCK);
         int prefectureIndex = cursor.getColumnIndex(MyHelper.Columns.PREFECTURE);
@@ -153,11 +190,34 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
             // 次の行が無い時はfalseを返すのでループを抜ける
         } while (cursor.moveToNext());
 
+        Cursor c = db.query(MyHelper.ACCOUNT_TABLE_NAME, new String[]{
+                MyHelper.AccountColumns.firstName,
+                MyHelper.AccountColumns.lastName,
+                MyHelper.AccountColumns.prefectureId,
+                MyHelper.AccountColumns.address,
+                MyHelper.AccountColumns.mailAddress,
+                MyHelper.AccountColumns.password
+                }, null, null, null, null, null);
+
+        if (!cursor.moveToFirst()) {
+            cursor.close();
+            db.close();
+            return;
+        }
+
+        c.moveToFirst();
+
+        Log.e("test:", String.format("%s | %s | %d | %s | %s | %s",
+                c.getString(0), c.getString(1), c.getInt(2), c.getString(3), c.getString(4),
+                c.getString(5)));
+
+
         // 6. Cursorを閉じる
         cursor.close();
 
         // 7. データベースを閉じる
-        db.close();;
+        db.close();
+        ;
 
         //return itemList;
     }
@@ -168,26 +228,75 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
         Log.d("ProductList", "onCreate");
 
         super.onCreate(savedInstanceState);
-
-
-
         setContentView(R.layout.activity_product_list);
 
         // MyHelperオブジェクトを作り、フィールドにセット
-        myHelper = new MyHelper(this);
+        myHelper = MyHelper.getInstance(this);
 
         //ハンドラを生成
         mHandler = new Handler();
+
+        accountInfo = AccountInfo.getInstance();
 
         //initTable();
 
         itemList = new ArrayList<ProductItem>();
         adapter =
-                new ItemAdapter(getApplicationContext(), 0,
-                        itemList);
+                new ItemAdapter(getApplicationContext(), 0, itemList);
         adapter.setNotifyOnChange(true);
         ListView listView =
-                (ListView)findViewById(R.id.listView);
+                (ListView) findViewById(R.id.listView);
+        listView.setAdapter(adapter);
+
+        // Table取得したデータをListViewにセットするためのスレッド
+        (new Thread(new Runnable() {
+            @Override
+            public void run() {
+                initTable();
+                setProductData();
+
+                //メインスレッドのメッセージキューにメッセージを登録します。
+                mHandler.post(new Runnable() {
+                    //run()の中の処理はメインスレッドで動作されます。
+                    public void run() {
+                        adapter.notifyDataSetChanged();
+                    }
+                });
+            }
+        })).start();
+
+        /*listView.setOnItemClickListener(this);
+
+        Button btn_add = (Button) findViewById(R.id.btn_add);
+        btn_add.setOnClickListener(this);
+
+        //スレッドを生成して起動します
+        (new Thread(new Runnable() {
+            @Override
+            public void run() {
+                initTable();
+                setProductData();
+
+                //メインスレッドのメッセージキューにメッセージを登録します。
+                mHandler.post(new Runnable() {
+                    //run()の中の処理はメインスレッドで動作されます。
+                    public void run() {
+                        adapter.notifyDataSetChanged();
+                    }
+                });
+            }
+        })).start();*/
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+
+        Log.e("Log :", "restart!");
+
+        adapter.setNotifyOnChange(true);
+        ListView listView =
+                (ListView) findViewById(R.id.listView);
         listView.setAdapter(adapter);
 
         // Table取得したデータをListViewにセットするためのスレッド
@@ -197,43 +306,14 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
                 setProductData();
 
                 //メインスレッドのメッセージキューにメッセージを登録します。
-                mHandler.post(new Runnable (){
+                mHandler.post(new Runnable() {
                     //run()の中の処理はメインスレッドで動作されます。
-                    public void run(){
+                    public void run() {
                         adapter.notifyDataSetChanged();
                     }
                 });
             }
         })).start();
-
-        listView.setOnItemClickListener(this);
-
-        Button btn_add = (Button)findViewById(R.id.btn_add);
-        btn_add.setOnClickListener(this);
-
-        Button btn_ini = ( Button)findViewById(R.id.btn_ini);
-        btn_ini.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                //スレッドを生成して起動します
-                (new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        initTable();
-                        setProductData();
-
-                        //メインスレッドのメッセージキューにメッセージを登録します。
-                        mHandler.post(new Runnable (){
-                            //run()の中の処理はメインスレッドで動作されます。
-                            public void run(){
-                                adapter.notifyDataSetChanged();
-                            }
-                        });
-                    }
-                })).start();
-            }
-        });
     }
 
     private class ItemAdapter extends ArrayAdapter<ProductItem>{
@@ -285,8 +365,9 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
                 @Override
                 public void onClick(View view) {
                     for (ProductItem productItem : selectProduct) {
-                        Log.e("ProductName :", productItem.name);
+                        Log.e("ProductName :", productItem.id);
                         Log.e("ProductPrice :", String.valueOf(productItem.price));
+
                     }
                 }
             });
@@ -305,6 +386,15 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
         int price;
         int stock;
         String prefecture;
+    }
+
+    private class AccountDb {
+        String firstName;
+        String lastName;
+        int prefectureId;
+        String address;
+        String mailAddress;
+        String password;
     }
 
     private List<ProductDbItem> itemDbList;
@@ -371,11 +461,12 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
 
     }
 
+
     private void initTable(){
 
         Log.d("ProductList", "initTable");
 
-        SQLiteDatabase db = myHelper.getWritableDatabase();
+        db = myHelper.getWritableDatabase();
 
         // 一旦削除
         int count = db.delete(MyHelper.TABLE_NAME, null, null);
@@ -389,7 +480,7 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
             // 列に対応する値をセットする
             ContentValues values = new ContentValues();
             values.put(MyHelper.Columns.ID, item.id);
-            values.put(MyHelper.Columns.NAME, item.name);
+            values.put(MyHelper.Columns.productName, item.name);
             values.put(MyHelper.Columns.PRICE, item.price);
             values.put(MyHelper.Columns.STOCK, item.stock);
             values.put(MyHelper.Columns.PREFECTURE, item.prefecture);
@@ -400,5 +491,46 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
                 Log.d("Database", "行の追加に失敗したよ");
             }
         }
+
+        testAccountInsert();
+
+
     }
+
+    private void testAccountInsert() {
+        // 一旦削除
+        int count = db.delete(MyHelper.ACCOUNT_TABLE_NAME, null, null);
+        Log.d("initTable", "count =" + count);
+
+        ContentValues values = new ContentValues();
+        values.put(MyHelper.AccountColumns.firstName, "隆史");
+        values.put(MyHelper.AccountColumns.lastName, "山田");
+        values.put(MyHelper.AccountColumns.prefectureId, 47);
+        values.put(MyHelper.AccountColumns.address, "高知市鏡竹奈路");
+        values.put(MyHelper.AccountColumns.mailAddress, "newTakashi@gmail.com");
+        values.put(MyHelper.AccountColumns.password, "takashi");
+
+        db.insert(MyHelper.ACCOUNT_TABLE_NAME, null, values);
+
+        //AccountInfoクラスで都道府県IDとメールアドレスを保持する。
+        Cursor cursor = db.query(MyHelper.ACCOUNT_TABLE_NAME,
+                new String[]{
+                        MyHelper.AccountColumns.prefectureId,
+                        MyHelper.AccountColumns.mailAddress
+                },
+                String.format("%s = %s",
+                        MyHelper.AccountColumns.mailAddress, "\"newTakashi@gmail.com\""),
+                null, null, null, null);
+        cursor.moveToFirst();
+
+        Log.e("accountInfo :", cursor.getString(cursor.getColumnIndex(MyHelper.AccountColumns.prefectureId)));
+        Log.e("accountInfo :", cursor.getString(cursor.getColumnIndex(MyHelper.AccountColumns.mailAddress)));
+
+        accountInfo.setPrefectureId(cursor.getInt(cursor.getColumnIndex(MyHelper.AccountColumns.prefectureId)));
+        accountInfo.setMailAddress(cursor.getString(cursor.getColumnIndex(MyHelper.AccountColumns.mailAddress)));
+
+        Log.e("accountInfo :", String.valueOf(accountInfo.getPrefectureId()));
+    }
+
+
 }
