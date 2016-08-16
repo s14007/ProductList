@@ -1,3 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<items version="2" />
+<items version="2" >
 
+    <item
+        jar="/home/s14007/Use/ProductList/app/build/intermediates/exploded-aar/com.android.support/support-v4/24.1.0/jars/libs/internal_impl-24.1.0.jar"
+        jumboMode="false"
+        revision="24.0.0"
+        sha1="8c7087216946c546f85a1242a2794c0f271e092c">
+        <dex dex="/home/s14007/Use/ProductList/app/build/intermediates/pre-dexed/debug/internal_impl-24.1.0_f57d5bc522743fea3c7c23a4434f4ad7fb4ded68.jar" />
+    </item>
+    <item
+        jar="/home/s14007/Use/ProductList/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/24.1.0/jars/classes.jar"
+        jumboMode="false"
+        revision="24.0.0"
+        sha1="9340c4f95a4e3916c9ad70296e24576743743712">
+        <dex dex="/home/s14007/Use/ProductList/app/build/intermediates/pre-dexed/debug/com.android.support-appcompat-v7-24.1.0_d5b0c602d416cb2cccde6a94ee1e1ad83b110fd2.jar" />
+    </item>
+    <item
+        jar="/home/s14007/Use/ProductList/app/build/intermediates/exploded-aar/com.android.support/animated-vector-drawable/24.1.0/jars/classes.jar"
+        jumboMode="false"
+        revision="24.0.0"
+        sha1="8c854b30eca6c442fe842e66cd3b58c5dd08996f">
+        <dex dex="/home/s14007/Use/ProductList/app/build/intermediates/pre-dexed/debug/com.android.support-animated-vector-drawable-24.1.0_12fdb4a2d9634be5ec64941940191862aafc8ab7.jar" />
+    </item>
+    <item
+        jar="/home/s14007/Use/ProductList/app/build/intermediates/exploded-aar/com.android.support/support-vector-drawable/24.1.0/jars/classes.jar"
+        jumboMode="false"
+        revision="24.0.0"
+        sha1="ba8e8860f7e033c3a503b682337a4bafdf56e6ee">
+        <dex dex="/home/s14007/Use/ProductList/app/build/intermediates/pre-dexed/debug/com.android.support-support-vector-drawable-24.1.0_f47c3354951cfffd647f0c39987949e4e0954585.jar" />
+    </item>
+    <item
+        jar="/home/s14007/Use/ProductList/app/build/intermediates/exploded-aar/com.android.support/support-v4/24.1.0/jars/classes.jar"
+        jumboMode="false"
+        revision="24.0.0"
+        sha1="e096a5d8343cc9c5a9f6eded36bd0f4c82f8c83e">
+        <dex dex="/home/s14007/Use/ProductList/app/build/intermediates/pre-dexed/debug/com.android.support-support-v4-24.1.0_9648488fde73958d1d8405ef0391f7164a733494.jar" />
+    </item>
+    <item
+        jar="/home/s14007/.gradle/caches/modules-2/files-2.1/com.android.support/support-annotations/24.1.0/8a23146e1a8c7cb4758e3d3f62449213f1e51f67/support-annotations-24.1.0.jar"
+        jumboMode="false"
+        revision="24.0.0"
+        sha1="8a23146e1a8c7cb4758e3d3f62449213f1e51f67">
+        <dex dex="/home/s14007/Use/ProductList/app/build/intermediates/pre-dexed/debug/support-annotations-24.1.0_1bdf125d162a570aecd127a3b2a541c89d63fbb7.jar" />
+    </item>
+
+</items>

@@ -371,7 +371,6 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
 
     }
 
-
     private void initTable(){
 
         Log.d("ProductList", "initTable");
@@ -401,8 +400,5 @@ public class ProductList extends Activity implements AdapterView.OnItemClickList
                 Log.d("Database", "行の追加に失敗したよ");
             }
         }
-
     }
-
-
 }
