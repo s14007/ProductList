@@ -6,9 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 import android.util.Log;
 
-/**
- * Created by application on 16/07/26.
- */
+
 public class MyHelper extends SQLiteOpenHelper {
     private static MyHelper singleton = null;
 
@@ -20,11 +18,11 @@ public class MyHelper extends SQLiteOpenHelper {
     private static final String SQL_CREATE_TABLE =
             "CREATE TABLE " + TABLE_NAME + "(" +
                     Columns._ID + " INTEGER primary key autoincrement," +
-                    Columns.ID + " TEXT," +
+                    Columns.id + " TEXT," +
                     Columns.productName + " TEXT," +
-                    Columns.PRICE + " INTEGER," +
-                    Columns.STOCK + " INTEGER," +
-                    Columns.PREFECTURE + " TEXT);";
+                    Columns.price + " INTEGER," +
+                    Columns.stock + " INTEGER," +
+                    Columns.prefecture + " INTEGER);";
 
     private static final String CREATE_TABLE_ACCOUNT =
             "CREATE TABLE " + ACCOUNT_TABLE_NAME + "(" +
@@ -45,7 +43,7 @@ public class MyHelper extends SQLiteOpenHelper {
                     CodeMColumns.code + "));";
 
 
-    public interface AccountColumns extends BaseColumns {
+    interface AccountColumns extends BaseColumns {
         String firstName = "FirstName";
         String lastName = "LastName";
         String prefectureId = "PrefectureId";
@@ -54,21 +52,21 @@ public class MyHelper extends SQLiteOpenHelper {
         String password = "Password";
     }
 
-    public interface Columns extends BaseColumns {
-        String ID = "id";
+    interface Columns extends BaseColumns {
+        String id = "id";
         String productName = "name";
-        String PRICE = "price";
-        String STOCK = "stock";
-        String PREFECTURE = "prefecture";
+        String price = "price";
+        String stock = "stock";
+        String prefecture = "prefecture";
     }
 
-    public interface CodeMColumns extends BaseColumns {
+    interface CodeMColumns extends BaseColumns {
         String codeId = "CodeId";
         String code = "Code";
         String name = "Name";
     }
 
-    static synchronized MyHelper getInstance(Context context) {
+    static MyHelper getInstance(Context context) {
         if (singleton == null) {
             singleton = new MyHelper(context);
         }

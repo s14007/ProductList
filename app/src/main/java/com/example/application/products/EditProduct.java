@@ -107,6 +107,7 @@ public class EditProduct extends Activity implements View.OnClickListener{
 
         EditText et_prefecture = (EditText)findViewById(R.id.et_prefecture);
         item.prefecture = et_prefecture.getText().toString();
+
         if(item.prefecture.equals("")){
             err_msg += "在庫を入力してください\n";
         }
@@ -115,7 +116,7 @@ public class EditProduct extends Activity implements View.OnClickListener{
 
         if(err_msg.equals("")){
 
-            String ret_msg = "";
+            String ret_msg;
 
             if(mode.equals("edit")){
                 ret_msg = updateProduct(_id, item);
@@ -149,8 +150,6 @@ public class EditProduct extends Activity implements View.OnClickListener{
                 alertDlg.create().show();
             }
 
-
-
         }else{
             // 確認ダイアログの生成
             AlertDialog.Builder alertDlg = new AlertDialog.Builder(this);
@@ -174,7 +173,6 @@ public class EditProduct extends Activity implements View.OnClickListener{
             alertDlg.create().show();
 
         }
-
     }
 
     private class ProductItemStr {
@@ -193,7 +191,7 @@ public class EditProduct extends Activity implements View.OnClickListener{
         SQLiteDatabase db_q = myHelper.getReadableDatabase();
 
         // 2. queryを呼び、検索を行う
-        String where = MyHelper.Columns.ID + "=?";
+        String where = MyHelper.Columns.id + "=?";
         String [] args = { item.id };
         Cursor cursor = db_q.query(
                 MyHelper.TABLE_NAME, null, where, args, null, null, null);
@@ -214,11 +212,11 @@ public class EditProduct extends Activity implements View.OnClickListener{
         // 列に対応する値をセット
         ContentValues values = new ContentValues();
 
-        values.put(MyHelper.Columns.ID, item.id);
+        values.put(MyHelper.Columns.id, item.id);
         values.put(MyHelper.Columns.productName, item.name);
-        values.put(MyHelper.Columns.PRICE, item.price);
-        values.put(MyHelper.Columns.STOCK, item.stock);
-        values.put(MyHelper.Columns.PREFECTURE, item.prefecture);
+        values.put(MyHelper.Columns.price, item.price);
+        values.put(MyHelper.Columns.stock, item.stock);
+        values.put(MyHelper.Columns.prefecture, item.prefecture);
 
         // データベースに行を追加する
         long id = db.insert(MyHelper.TABLE_NAME, null, values);
@@ -243,11 +241,11 @@ public class EditProduct extends Activity implements View.OnClickListener{
         // 2. 更新する値をセット
         ContentValues values = new ContentValues();
 
-        values.put(MyHelper.Columns.ID, item.id);
+        values.put(MyHelper.Columns.id, item.id);
         values.put(MyHelper.Columns.productName, item.name);
-        values.put(MyHelper.Columns.PRICE, item.price);
-        values.put(MyHelper.Columns.STOCK, item.stock);
-        values.put(MyHelper.Columns.PREFECTURE, item.prefecture);
+        values.put(MyHelper.Columns.price, item.price);
+        values.put(MyHelper.Columns.stock, item.stock);
+        values.put(MyHelper.Columns.prefecture, item.prefecture);
 
         /*Log.d("updateProduct",
                 "ID = " + id_str + "\n" +
@@ -266,7 +264,6 @@ public class EditProduct extends Activity implements View.OnClickListener{
 
         // 4. データベースを閉じる
         db.close();
-
 
         return err_msg;
 

@@ -17,16 +17,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ChangeAccountInfo extends AppCompatActivity {
-    private MyHelper helper;
     private SQLiteDatabase db;
-    private Button buttonInsert;
     private Spinner prefectureSpinner;
     private EditText editFirstName;
     private EditText editLastName;
     private EditText editAddress;
-    private EditText editMailAddress;
     private EditText editPassword;
-    private EditText editPrefectureId;
 
     private AccountInfo accountInfo;
     private Cursor cursor;
@@ -37,17 +33,16 @@ public class ChangeAccountInfo extends AppCompatActivity {
         setContentView(R.layout.activity_change_account_info);
 
         accountInfo = AccountInfo.getInstance();
-        helper = MyHelper.getInstance(this);
+        MyHelper helper = MyHelper.getInstance(this);
         db = helper.getReadableDatabase();
 
         LinearLayout layout = (LinearLayout) findViewById(R.id.layout_create);
         editFirstName = new EditText(this);
         editLastName = new EditText(this);
-        editPrefectureId = new EditText(this);
+        EditText editPrefectureId = new EditText(this);
         editAddress = new EditText(this);
-//        editMailAddress = new EditText(this);
 //        editPassword = new EditText(this);
-        buttonInsert = new Button(this);
+        Button buttonInsert = new Button(this);
         buttonInsert.setText("決定");
 
         prefectureSpinner = new Spinner(this);
@@ -63,7 +58,7 @@ public class ChangeAccountInfo extends AppCompatActivity {
         editAddress.setText(cursor.getString(3));
 
         //Spinner set
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.support_simple_spinner_dropdown_item);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         adapter.addAll(getPrefecture(accountInfo.getPrefectureId()));
         prefectureSpinner.setAdapter(adapter);
