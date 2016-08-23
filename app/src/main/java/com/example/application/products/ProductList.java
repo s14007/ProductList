@@ -311,6 +311,7 @@ public class ProductList extends AppCompatActivity implements AdapterView.OnItem
     }
 
     public void loginIfNeeded() {
+
         Log.e("accountInfo :", accountInfo.getMailAddress() + " ");
         if (null == accountInfo.getMailAddress()) {
             EditTextDialog dialogFragment = new EditTextDialog();
