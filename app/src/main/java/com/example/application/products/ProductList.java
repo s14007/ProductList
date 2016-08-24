@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,7 +24,9 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.application.products.Dialog.EditTextDialog;
 
@@ -65,6 +68,7 @@ public class ProductList extends AppCompatActivity implements AdapterView.OnItem
                 startActivity(intent);
                 break;
             case 2:
+
                 break;
             case 3:
                 break;
@@ -163,7 +167,6 @@ public class ProductList extends AppCompatActivity implements AdapterView.OnItem
                         MyHelper.Columns._ID + " ASC");
 
 
-
         // 3. 読込位置を先頭にする。falseの場合は結果0件
         if (!cursor.moveToFirst()) {
             cursor.close();
@@ -212,7 +215,7 @@ public class ProductList extends AppCompatActivity implements AdapterView.OnItem
                 MyHelper.AccountColumns.address,
                 MyHelper.AccountColumns.mailAddress,
                 MyHelper.AccountColumns.password
-                }, null, null, null, null, null);
+        }, null, null, null, null, null);
 
         if (!cursor.moveToFirst()) {
             cursor.close();
@@ -241,7 +244,6 @@ public class ProductList extends AppCompatActivity implements AdapterView.OnItem
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product_list);
-
         Log.d("ProductList", "onCreate");
 
         // MyHelperオブジェクトを作り、フィールドにセット
@@ -258,28 +260,6 @@ public class ProductList extends AppCompatActivity implements AdapterView.OnItem
 
         testAccountInsert();
         loginIfNeeded();
-
-        /*adapter.setNotifyOnChange(true);
-        ListView listView =
-                (ListView) findViewById(R.id.listView);
-        listView.setAdapter(adapter);
-
-        // Table取得したデータをListViewにセットするためのスレッド
-        (new Thread(new Runnable() {
-            @Override
-            public void run() {
-                initTable();
-                setProductData();
-
-                //メインスレッドのメッセージキューにメッセージを登録します。
-                mHandler.post(new Runnable() {
-                    //run()の中の処理はメインスレッドで動作されます。
-                    public void run() {
-                        adapter.notifyDataSetChanged();
-                    }
-                });
-            }
-        })).start();*/
     }
 
     @Override
@@ -311,13 +291,14 @@ public class ProductList extends AppCompatActivity implements AdapterView.OnItem
     }
 
     public void loginIfNeeded() {
-
         Log.e("accountInfo :", accountInfo.getMailAddress() + " ");
         if (null == accountInfo.getMailAddress()) {
+            //ログインダイアログ生成
             EditTextDialog dialogFragment = new EditTextDialog();
             dialogFragment.setCancelable(false);
             dialogFragment.show(getFragmentManager(), "dialog_fragment");
         } else {
+            //製品を取得
             adapter.setNotifyOnChange(true);
             ListView listView =
                     (ListView) findViewById(R.id.listView);
@@ -342,66 +323,80 @@ public class ProductList extends AppCompatActivity implements AdapterView.OnItem
         }
     }
 
-    public void onDialogLoginClick() {
+    public boolean onDialogLoginClick(String mailAddress, String password) {
         Log.e("dialogOk :", "click");
+        if (null == queryAccount(mailAddress, password)) {
+            Log.e("Log :", "何もしない");
+            Toast.makeText(ProductList.this, "ねーよ", Toast.LENGTH_SHORT).show();
+            return false;
+        } else {
+            //製品取得
+            adapter.setNotifyOnChange(true);
+            ListView listView =
+                    (ListView) findViewById(R.id.listView);
+            listView.setAdapter(adapter);
 
-        adapter.setNotifyOnChange(true);
-        ListView listView =
-                (ListView) findViewById(R.id.listView);
-        listView.setAdapter(adapter);
+            // Table取得したデータをListViewにセットするためのスレッド
+            (new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    initTable();
+                    setProductData();
 
-        // Table取得したデータをListViewにセットするためのスレッド
-        (new Thread(new Runnable() {
-            @Override
-            public void run() {
-                initTable();
-                setProductData();
-
-                //メインスレッドのメッセージキューにメッセージを登録します。
-                mHandler.post(new Runnable() {
-                    //run()の中の処理はメインスレッドで動作されます。
-                    public void run() {
-                        adapter.notifyDataSetChanged();
-                    }
-                });
-            }
-        })).start();
-
-        queryAccount();
-
+                    //メインスレッドのメッセージキューにメッセージを登録します。
+                    mHandler.post(new Runnable() {
+                        //run()の中の処理はメインスレッドで動作されます。
+                        public void run() {
+                            adapter.notifyDataSetChanged();
+                        }
+                    });
+                }
+            })).start();
+        }
+        return true;
     }
 
-    public void queryAccount() {
+    public String queryAccount(String mailAddres, String password) {
         //AccountInfoクラスで都道府県IDとメールアドレスを保持する。
         Cursor cursor = db.query(MyHelper.ACCOUNT_TABLE_NAME,
                 new String[]{
                         MyHelper.AccountColumns.prefectureId,
                         MyHelper.AccountColumns.mailAddress
                 },
-                String.format("%s = %s",
-                        MyHelper.AccountColumns.mailAddress, "\"newTakashi@gmail.com\""),
+                String.format("%s = %s AND %s = %s",
+                        MyHelper.AccountColumns.mailAddress, "\"" + mailAddres + "\"",
+                        MyHelper.AccountColumns.password, "\"" + password + "\""),
                 null, null, null, null);
         cursor.moveToFirst();
 
-        Log.e("accountInfo :", cursor.getString(cursor.getColumnIndex(MyHelper.AccountColumns.prefectureId)));
-        Log.e("accountInfo :", cursor.getString(cursor.getColumnIndex(MyHelper.AccountColumns.mailAddress)));
+        if (cursor.getCount() == 0) {
+            return null;
+        } else {
 
-        accountInfo.setPrefectureId(cursor.getInt(cursor.getColumnIndex(MyHelper.AccountColumns.prefectureId)));
-        accountInfo.setMailAddress(cursor.getString(cursor.getColumnIndex(MyHelper.AccountColumns.mailAddress)));
+            Log.e("cursorSize :", String.valueOf(cursor.getCount()));
 
-        Log.e("accountInfo :", String.valueOf(accountInfo.getPrefectureId()));
+            Log.e("accountInfo :", cursor.getString(cursor.getColumnIndex(MyHelper.AccountColumns.prefectureId)));
+            Log.e("accountInfo :", cursor.getString(cursor.getColumnIndex(MyHelper.AccountColumns.mailAddress)));
 
-        cursor.close();
+            accountInfo.setPrefectureId(cursor.getInt(cursor.getColumnIndex(MyHelper.AccountColumns.prefectureId)));
+            accountInfo.setMailAddress(cursor.getString(cursor.getColumnIndex(MyHelper.AccountColumns.mailAddress)));
+
+            Log.e("accountInfo :", String.valueOf(accountInfo.getPrefectureId()));
+
+            cursor.close();
+        }
+
+        return accountInfo.getMailAddress();
     }
 
-    private class ItemAdapter extends ArrayAdapter<ProductItem>{
+    private class ItemAdapter extends ArrayAdapter<ProductItem> {
         private LayoutInflater inflater;
 
         ItemAdapter(Context context, int resouce,
-                    List<ProductItem> objects){
+                    List<ProductItem> objects) {
             super(context, resouce, objects);
             inflater =
-                    (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         }
 
         @NonNull
@@ -413,8 +408,8 @@ public class ProductList extends AppCompatActivity implements AdapterView.OnItem
             final ProductItem item = getItem(position);
 
             if (item != null) {
-                TextView nameView = (TextView)view.findViewById(R.id.name);
-                TextView priceView = (TextView)view.findViewById(R.id.price);
+                TextView nameView = (TextView) view.findViewById(R.id.name);
+                TextView priceView = (TextView) view.findViewById(R.id.price);
                 final CheckBox checkBox = (CheckBox) view.findViewById(R.id.checkbox);
 
                 selectProduct = new ArrayList<>();
@@ -448,7 +443,7 @@ public class ProductList extends AppCompatActivity implements AdapterView.OnItem
                     }
                 });
             }
-            return  view;
+            return view;
         }
     }
 
@@ -475,7 +470,7 @@ public class ProductList extends AppCompatActivity implements AdapterView.OnItem
 
     private List<ProductDbItem> itemDbList;
 
-    private void setProductDbData(){
+    private void setProductDbData() {
 
         itemDbList = new ArrayList<>();
 
@@ -595,7 +590,7 @@ public class ProductList extends AppCompatActivity implements AdapterView.OnItem
     }
 
 
-    private void initTable(){
+    private void initTable() {
         Log.d("ProductList", "initTable");
         db = myHelper.getWritableDatabase();
 
@@ -605,7 +600,7 @@ public class ProductList extends AppCompatActivity implements AdapterView.OnItem
 
         setProductDbData();
 
-        for(int i = 0; i< itemDbList.size(); i++){
+        for (int i = 0; i < itemDbList.size(); i++) {
             ProductDbItem item = itemDbList.get(i);
 
             // 列に対応する値をセットする
@@ -618,7 +613,7 @@ public class ProductList extends AppCompatActivity implements AdapterView.OnItem
 
             // データベースに行を追加する
             long id = db.insert(MyHelper.TABLE_NAME, null, values);
-            if(id == -1){
+            if (id == -1) {
                 Log.d("Database", "行の追加に失敗したよ");
             }
         }
@@ -638,8 +633,8 @@ public class ProductList extends AppCompatActivity implements AdapterView.OnItem
         values.put(MyHelper.AccountColumns.lastName, "山田");
         values.put(MyHelper.AccountColumns.prefectureId, 47);
         values.put(MyHelper.AccountColumns.address, "高知市鏡竹奈路");
-        values.put(MyHelper.AccountColumns.mailAddress, "newTakashi@gmail.com");
-        values.put(MyHelper.AccountColumns.password, "takashi");
+        values.put(MyHelper.AccountColumns.mailAddress, "test@gmail.com");
+        values.put(MyHelper.AccountColumns.password, "test");
 
         db.insert(MyHelper.ACCOUNT_TABLE_NAME, null, values);
 

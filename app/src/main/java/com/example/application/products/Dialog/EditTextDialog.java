@@ -25,13 +25,29 @@ public class EditTextDialog extends DialogFragment {
     public Dialog onCreateDialog(Bundle safedInstanceState) {
         view = getActivity().getLayoutInflater().inflate(R.layout.login, null);
 
+        final EditText editMailAddress = (EditText)view.findViewById(R.id.edit_mailaddress);
+        final EditText editPassword = (EditText)view.findViewById(R.id.edit_password);
+
+        //めんどくさいので入力しておく
+        editMailAddress.setText("test@gmail.com");
+        editPassword.setText("test");
+
         Button btn = (Button)view.findViewById(R.id.button_login);
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                ((ProductList)getActivity()).onDialogLoginClick();
-                dismiss();
+                //入力された値がDBにあるか検索する。
+               boolean isCheck = ((ProductList)getActivity())
+                        .onDialogLoginClick(
+                                editMailAddress.getText().toString(),
+                                editPassword.getText().toString()
+                        );
+
+                if (isCheck) {
+                    //情報があったらダイアログを非表示にする
+                    dismiss();
+                }
             }
         });
 
